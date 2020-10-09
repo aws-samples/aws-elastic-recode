@@ -1,4 +1,4 @@
-## My Project
+## AWS Elastic Recode
 
 TODO: Fill this README out!
 
