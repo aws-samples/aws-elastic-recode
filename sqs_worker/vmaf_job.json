@@ -1,0 +1,15 @@
+{
+  "userid":"8242d788-3577-455b-9927-12fa48c52fe7",
+  "input":"s3://m.azeroth.one/static/video/example.mp4",
+  "origin":"s3://m.azeroth.one/static/video/example.mp4",
+  "output":"s3://m.azeroth.one/static/video/vmaf/",
+  "profile":{
+    "vmaf":{
+     "scale":"1280x720",
+     "ssim":"enable",
+     "psnr":"enable",
+     "ms-ssim":"enable"
+   }
+  }
+  
+}

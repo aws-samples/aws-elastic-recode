@@ -1,0 +1,16 @@
+{
+    "userid":"8242d788-3577-455b-9927-12fa48c52fe7",
+    "jobid":"d8356414-53e4-4357-a1ba-46d6be3f18b5",
+    "input":"s3://m.azeroth.one/static/video/example.mp4",
+    "output":"s3://m.azeroth.one/static/video/output.mp4",
+    "profile":{
+       "ffmpeg":{
+           "codec":"libx264|libx265",
+           "scale":"480:270",
+           "bitrate":"1M",
+           "buffersize":"40k",
+           "profile":"quality|latency",
+           "platform":"cpu|gpu"
+       }
+     }
+}

@@ -1,0 +1,25 @@
+#!/usr/bin/env python3
+# -*-coding:UTF-8-*-
+
+#author  Jason Xue
+
+USER_PROFILE_QUALITY="quality"
+USER_PROFILE_LATENCY="latency"
+CPU_PLATFORM_CPU="cpu"
+CPU_PLATFORM_GPU="gpu"
+CODEC_264="libx264"
+CODEC_265="libx265"
+FFMPEG_PROFILE_MAIN="main"
+FFMPEG_PROFILE_HIGH="high"
+
+SIZE_TO_SCALE = {
+      "1080p":"1920:1080",
+      "720p":"1280:720",
+      "480p":"800:480",
+      "360p":"640:360",
+      "270p":"480:270"
+}
+CODEC_TO_FFMPEG_PROFILE = {
+   CODEC_264:FFMPEG_PROFILE_HIGH,
+   CODEC_265:FFMPEG_PROFILE_MAIN
+}
