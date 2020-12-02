@@ -1,8 +1,8 @@
 
 
-#AWS Elastic Recode
+# AWS Elastic Recode
 
-##Introduction ([中文版本](./README_zh.md))
+## Introduction ([中文版本](./README_zh.md))
 
 Transcode jobs are the most resource intensive workload for media / gaming studio customers, customers can achieve performance, cost and elastic of large scale transcode jobs on AWS. 
 
