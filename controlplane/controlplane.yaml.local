@@ -1,0 +1,43 @@
+---
+apiVersion: extensions/v1beta1
+kind: Deployment
+metadata:
+  name: elasticrecode
+  labels:
+    app: elasticrecode
+spec:
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        app: elasticrecode
+    spec:
+      serviceAccountName: elasticrecode-controlplane
+      containers:
+      - name: elasticrecode
+        image: stevensu/elasticrecode_control_plane:k8s_v0.1.4
+        ports:
+        - containerPort: 80
+        imagePullPolicy: Always
+        env:
+        - name: AWS_DEFAULT_REGION
+          value: "us-east-1"
+        - name: QUEUE_NAME
+          value: "control_plane"
+      
+      
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: "service-elasticrecode"
+  annotations:
+        service.beta.kubernetes.io/aws-load-balancer-type: nlb
+spec:
+  selector:
+    app: elasticrecode
+  type: LoadBalancer
+  ports:
+  - protocol: TCP
+    port: 80
+    targetPort: 80
