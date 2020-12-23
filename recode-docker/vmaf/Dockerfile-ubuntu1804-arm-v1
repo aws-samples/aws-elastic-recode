@@ -1,0 +1,108 @@
+# ffmpeg 4.3 for ARM on AWS Gravition2 - c6g/m6g
+# Only libx264 enabled
+
+FROM ubuntu:18.04 AS base
+
+WORKDIR     /tmp/workdir
+
+## Install dependency
+RUN \
+	apt-get -y update && \
+	DEBIAN_FRONTEND=noninteractive apt-get upgrade -yq && \
+	apt-get install -yq --no-install-recommends \
+	cmake pkg-config \
+	software-properties-common \
+	git wget bzip2 make \
+	gcc-arm* aarch64* && \
+	apt-get install python3 python3-pip python3-setuptools python3-wheel ninja-build doxygen -y && \
+	pip3 install meson && \
+	apt-get autoremove -y && \
+    apt-get clean -y
+
+FROM base as build
+
+ARG         LD_LIBRARY_PATH=/opt/ffmpeg/lib
+ARG         PREFIX=/opt/ffmpeg
+ARG         LD_LIBRARY_PATH="/opt/ffmpeg/lib:/usr/lib:/lib"
+
+## Install latest VMAF https://github.com/Netflix/vmaf
+RUN \
+        DIR=/tmp/vmaf && \
+        mkdir -p ${DIR} && \
+        cd ${DIR} && \
+		git clone https://github.com/Netflix/vmaf.git && \
+		cd vmaf/libvmaf && \
+        meson build --buildtype release && \
+		ninja -vC build && \
+		ninja -vC build install && \
+        rm -rf ${DIR}
+
+## Install libx264
+RUN \
+    DIR=/tmp/x264 && \
+    mkdir -p ${DIR} && cd ${DIR} && \
+	wget https://download.videolan.org/x264/snapshots/x264-snapshot-20191217-2245.tar.bz2 && \
+	tar jxvf x264-snapshot-20191217-2245.tar.bz2 && \
+	cd x264-snapshot-20191217-2245 && \
+	mkdir build && cd build && \
+	../configure \
+		--prefix="${PREFIX}" \
+		--enable-static \
+		--enable-shared \
+		--disable-cli \
+		--host=aarch64-linux \
+		--extra-cflags="-march=native" && \
+	make && make install && \
+	rm -rf ${DIR}
+
+## Install latest ffmpeg - 4.3
+RUN \
+	DIR=/tmp/ffmpeg && mkdir -p ${DIR} && cd ${DIR} && \
+	git clone https://github.com/FFmpeg/ffmpeg.git && \
+	cd ffmpeg && \
+	mkdir build && cd build && \
+	../configure \
+		--cross-prefix=aarch64-linux-gnu- \
+    	--enable-cross-compile \
+    	--target-os=linux \
+    	--arch=aarch64 \
+    	--prefix=${PREFIX} \
+    	--disable-debug \
+    	--disable-doc \
+    	--disable-ffplay \
+    	--enable-gpl \
+    	--enable-ffmpeg \
+    	--enable-libx264 \
+    	--enable-small \
+    	--enable-libvmaf \
+		--enable-version3 \
+    	--enable-nonfree \
+    	--enable-swscale \
+    	--enable-pthreads \
+    	--disable-armv5te \
+    	--disable-armv6 \
+    	--disable-armv6t2  \
+    	--extra-cflags="-I${PREFIX}/include -march=native" \
+    	--extra-ldflags=-L${PREFIX}/lib  \
+    	--extra-libs=-ldl  \
+    	--enable-pic && \
+	make && make install && \
+	export PATH="${PREFIX}/ffmpeg/bin:$PATH"
+
+
+## cleanup
+RUN \
+        ldd ${PREFIX}/bin/ffmpeg | grep opt/ffmpeg | cut -d ' ' -f 3 | xargs -i cp {} /usr/local/lib/ && \
+        cp ${PREFIX}/bin/* /usr/local/bin/ && \
+        cp -r ${PREFIX}/share/ffmpeg /usr/local/share/
+
+FROM        base AS release
+
+ENV         LD_LIBRARY_PATH=/usr/local/lib:/usr/lib:/lib
+
+COPY --from=build /usr/local /usr/local/
+
+## Configuration
+RUN \
+	 echo "${PREFIX}/ffmpeg/lib" >> /etc/ld.so.conf && \
+	 ldconfig
